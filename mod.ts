@@ -1,6 +1,7 @@
-import {LuaSandbox} from "./src/vm.ts";
+import {LuaSandbox, LuaThreadWrapper} from "./src/vm.ts";
 import {LuaFactory} from "./deps.ts";
 
+export {LuaSandbox, LuaThreadWrapper, LuaFactory};
 
 async function main() {
     const factory = new LuaFactory();

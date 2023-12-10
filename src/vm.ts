@@ -11,8 +11,14 @@ export enum ThreadState {
 }
 
 class TestAPI {
+    private readonly word: string;
+
+    constructor(word: string) {
+        this.word = word;
+    }
+
     public test1() {
-        console.log("Test API 1 called!");
+        console.log(`Test API 1 called with ${this.word}`);
     }
 
     private test2() {
@@ -24,9 +30,17 @@ class TestAPI {
         console.log("Test API 3 called!");
     }
 
-    public test4() {
-        console.log("Test API 4 called!");
+    public test4(arg: string) {
+        console.log(`Test API 4 called with: ${arg}`);
 
+    }
+
+    public asAPI() {
+        return {
+            test1: this.test1.bind(this),
+            test3: this.test3.bind(this),
+            test4: this.test4.bind(this)
+        }
     }
 
 }
@@ -85,15 +99,14 @@ export class LuaThreadWrapper {
     }
 
     protected initApi() {
-        this.set("api", new TestAPI());
+        this.set("api", new TestAPI("bird").asAPI());
     }
 
     protected setSafety() {
-        const instance = this;
         const hook = this.makeFunction((): void => {
             // not certain if 'this' will capture properly, I might have to 'break the rules' and use the const instance
             // deno complains about if it doesn't.
-            instance.checkSandbox();
+            this.checkSandbox();
         }, "vii");
 
         // set the hook to run every 1000 instructions
@@ -158,7 +171,7 @@ export class LuaThreadWrapper {
                 break;
                 default:
                     // it's an error...
-                    if(this.state === ThreadState.ForceTerminate) {
+                    if(this.state as ThreadState == ThreadState.ForceTerminate) {
                         this.results = undefined;
                     } else {
                         this.state = ThreadState.Error;
